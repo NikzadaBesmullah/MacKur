@@ -1,0 +1,116 @@
+@model IEnumerable<haliSahaRandevu.Models.HaliSaha>
+
+@{
+    ViewData["Title"] = "Admin Paneli";
+    var pendingCount = Model.Count(x => !x.OnaylandiMi);
+}
+
+<div class="row mb-4 align-items-center">
+    <div class="col">
+        <h1 class="fw-bold">Admin Paneli</h1>
+    </div>
+    <div class="col-auto">
+        <a asp-action="Reservations" class="btn btn-primary me-2"><i class="bi bi-calendar-check"></i> Tüm Randevuları Gör</a>
+        <span class="badge bg-warning text-dark p-2">Bekleyen Onay: @pendingCount</span>
+    </div>
+</div>
+
+<div class="card shadow border-0 mb-4">
+    <div class="card-header bg-white py-3">
+        <h5 class="mb-0 fw-bold"><i class="bi bi-list-ul"></i> Tüm Halı Sahalar</h5>
+    </div>
+    <div class="card-body p-0">
+        @if (!Model.Any())
+        {
+            <div class="text-muted text-center p-5">
+                Sistemde kayıtlı halı saha bulunmamaktadır.
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover mb-0 align-middle">
+                    <thead class="table-light">
+                        <tr>
+                            <th class="ps-3">Durum</th>
+                            <th>Fotoğraf</th>
+                            <th>Saha Adı</th>
+                            <th>Şehir / Fiyat</th>
+                            <th>Saha Sahibi</th>
+                            <th class="text-end pe-3">İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr class="@(item.OnaylandiMi ? "" : "table-warning")">
+                                <td class="ps-3">
+                                    @if (item.OnaylandiMi)
+                                    {
+                                        <span class="badge bg-success rounded-pill"><i class="bi bi-check-circle"></i> Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning text-dark rounded-pill"><i class="bi bi-hourglass-split"></i> Pasif/Bekliyor</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.FotoUrl))
+                                    {
+                                        <img src="@item.FotoUrl" class="rounded" style="width: 60px; height: 40px; object-fit: cover;" />
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted small">Yok</span>
+                                    }
+                                </td>
+                                <td class="fw-bold">
+                                    <a asp-controller="Home" asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none text-dark">
+                                        @item.Ad <i class="bi bi-box-arrow-up-right small text-muted"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    <div>@item.Il</div>
+                                    <small class="text-muted">@item.SaatlikUcret TL</small>
+                                </td>
+                                <td>
+                                    @item.Sahibi?.FullName <br/>
+                                    <small class="text-muted">@item.Sahibi?.Email</small>
+                                </td>
+                                <td class="text-end pe-3">
+                                    <div class="btn-group">
+                                        @if (!item.OnaylandiMi)
+                                        {
+                                            <form asp-action="ApproveField" method="post" class="me-1">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-success btn-sm" title="Onayla / Aktif Et">
+                                                    <i class="bi bi-check-lg"></i> Aktif Et
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                             <form asp-action="DeactivateField" method="post" class="me-1">
+                                                <input type="hidden" name="id" value="@item.Id" />
+                                                <button type="submit" class="btn btn-warning btn-sm" title="Pasife Al">
+                                                    <i class="bi bi-pause-circle"></i> Pasife Al
+                                                </button>
+                                            </form>
+                                        }
+
+                                        <form asp-action="DeleteField" method="post" onsubmit="return confirm('Kritik İşlem: Bu sahayı ve bağlı tüm randevuları silmek istediğinize emin misiniz?');">
+                                            <input type="hidden" name="id" value="@item.Id" />
+                                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Tamamen Sil">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div>
+</div>

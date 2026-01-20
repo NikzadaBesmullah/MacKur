@@ -1,0 +1,268 @@
+@using haliSahaRandevu.Models
+@{
+    ViewData["Title"] = "Saha Sahibi Paneli";
+}
+
+<div class="container-fluid py-5 mt-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-md-8 pt-2">
+            <h1 class="display-6 fw-bold text-primary mt-3">Yönetim Paneli</h1>
+            <p class="text-muted">Sahalarınızın performansını ve randevularınızı buradan takip edin.</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            @if (!(ViewBag.HasField ?? false))
+            {
+                <a asp-action="Create" class="btn btn-accent shadow-glow">
+                    <i class="bi bi-plus-lg me-2"></i> Yeni Saha Ekle
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+            <i class="bi bi-exclamation-triangle-fill me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Quick Stats -->
+    <div class="row g-4 mb-5">
+        <div class="col-md-3">
+            <div class="card glass-card border-0 p-4 h-100 shadow-sm transition-hover">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-primary bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-calendar-check text-primary fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0 small uppercase fw-bold">Toplam Randevu</h6>
+                        <h3 class="fw-bold mb-0">@ViewBag.TotalReservations</h3>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 4px;">
+                    <div class="progress-bar" role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card glass-card border-0 p-4 h-100 shadow-sm transition-hover">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-warning bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-clock-history text-warning fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0 small uppercase fw-bold">Bekleyen Onaylar</h6>
+                        <h3 class="fw-bold mb-0">@ViewBag.PendingReservations</h3>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 4px;">
+                    @{
+                        var pendingWidth = ViewBag.TotalReservations > 0 ? (ViewBag.PendingReservations * 100 / ViewBag.TotalReservations) : 0;
+                    }
+                    <div class="progress-bar bg-warning" role="progressbar" style="width: @pendingWidth%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card glass-card border-0 p-4 h-100 shadow-sm transition-hover">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-success bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-currency-dollar text-success fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0 small text-uppercase fw-bold">Toplam Kazanç</h6>
+                        <h3 class="fw-bold mb-0">@(((double)ViewBag.TotalRevenue).ToString("N0")) ₺</h3>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 4px;">
+                    <div class="progress-bar bg-success" role="progressbar" style="width: 100%"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card glass-card border-0 p-4 h-100 shadow-sm transition-hover">
+                <div class="d-flex align-items-center mb-3">
+                    <div class="rounded-circle bg-info bg-opacity-10 p-3 me-3">
+                        <i class="bi bi-star-fill text-info fs-4"></i>
+                    </div>
+                    <div>
+                        <h6 class="text-muted mb-0 small text-uppercase fw-bold">Memnuniyet</h6>
+                        <h3 class="fw-bold mb-0">@(((double)ViewBag.AverageRating).ToString("F1")) / 5</h3>
+                    </div>
+                </div>
+                <div class="progress mt-2" style="height: 4px;">
+                    @{
+                        var ratingWidth = ViewBag.AverageRating * 20;
+                    }
+                    <div class="progress-bar bg-info" role="progressbar" style="width: @ratingWidth%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4 class="fw-bold mb-0">Gelir Analizi</h4>
+                    <span class="badge bg-light text-dark">Son 7 Gün</span>
+                </div>
+                <canvas id="revenueChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h4 class="fw-bold mb-4">Yoğunluk (Günler)</h4>
+                <canvas id="dayChart" style="height: 300px;"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <h4 class="fw-bold mb-4">Popüler Saatler</h4>
+                <canvas id="hourChart" style="height: 250px;"></canvas>
+            </div>
+
+            <div class="card border-0 shadow-sm p-4">
+                <h4 class="fw-bold mb-4">Rezervasyon Takvimi</h4>
+                <div id="calendar"></div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Top Customers -->
+            <div class="card border-0 shadow-sm p-4 mb-4">
+                <h4 class="fw-bold mb-4">En Sadık Müşteriler</h4>
+                <div class="top-customers">
+                    @foreach (var customer in ViewBag.TopCustomers)
+                    {
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="avatar-sm bg-primary bg-opacity-10 text-primary rounded-circle d-flex align-items-center justify-content-center fw-bold me-3" style="width: 40px; height: 40px;">
+                                @customer.Name.Substring(0, 1)
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-0 fw-bold">@customer.Name</h6>
+                                <small class="text-muted">@customer.Count Rezervasyon</small>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Latest Reservations -->
+            <div class="card border-0 shadow-sm p-4 h-100">
+                <h4 class="fw-bold mb-4">Son İşlemler</h4>
+                <div class="latest-actions">
+                    @foreach (var r in (List<Randevu>)ViewBag.LatestReservations)
+                    {
+                        <div class="d-flex align-items-center mb-4 pb-3 border-bottom last-child-border-0">
+                            <div class="flex-shrink-0">
+                                <div class="rounded-circle bg-light p-3">
+                                    <i class="bi bi-person text-secondary"></i>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="fw-bold mb-0">@r.Kullanici?.FullName</h6>
+                                <p class="text-muted small mb-0">@r.HaliSaha?.Ad</p>
+                                <small class="text-muted">@r.Tarih.ToShortDateString() @r.SaatAraligi</small>
+                            </div>
+                            <div class="text-end">
+                                <span class="badge @(r.Durum == RandevuDurumu.Onaylandi ? "bg-success" : (r.Durum == RandevuDurumu.OdemeYapildi ? "bg-primary" : "bg-warning")) opacity-75">
+                                    @r.Durum.ToString()
+                                </span>
+                            </div>
+                        </div>
+                    }
+                </div>
+                <a asp-action="Reservations" class="btn btn-outline-primary btn-sm w-100 mt-auto">Tümünü Gör</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+    <style>
+        #calendar { background: #fff; padding: 20px; border-radius: 10px; }
+        .fc-header-toolbar { margin-bottom: 2rem !important; }
+        .fc-button-primary { background-color: var(--primary) !important; border-color: var(--primary) !important; }
+        .transition-hover { transition: transform 0.3s ease; }
+        .transition-hover:hover { transform: translateY(-5px); }
+        .last-child-border-0:last-child { border-bottom: 0 !important; }
+    </style>
+}
+
+@section Scripts {
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/locales/tr.js'></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // FullCalendar
+            var calendarEl = document.getElementById('calendar');
+            var calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                locale: 'tr',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+                events: '/Saha/GetCalendarEvents',
+                eventClick: function(info) {
+                    window.location.href = '/Saha/Reservations';
+                }
+            });
+            calendar.render();
+
+            // Revenue Chart
+            new Chart(document.getElementById('revenueChart'), {
+                type: 'line',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(ViewBag.DailyRevenueLabels)),
+                    datasets: [{
+                        label: 'Gelir (₺)',
+                        data: @Html.Raw(Json.Serialize(ViewBag.DailyRevenueValues)),
+                        borderColor: '#3B82F6',
+                        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+
+            // Day Chart
+            new Chart(document.getElementById('dayChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(ViewBag.DayLabels)),
+                    datasets: [{
+                        data: @Html.Raw(Json.Serialize(ViewBag.DayValues)),
+                        backgroundColor: ['#3B82F6', '#10B981', '#F59E0B', '#EF4444', '#8B5CF6', '#EC4899', '#64748B']
+                    }]
+                },
+                options: { responsive: true }
+            });
+
+            // Hour Chart
+            new Chart(document.getElementById('hourChart'), {
+                type: 'bar',
+                data: {
+                    labels: @Html.Raw(Json.Serialize(ViewBag.HourlyLabels)),
+                    datasets: [{
+                        label: 'Rezervasyon Sayısı',
+                        data: @Html.Raw(Json.Serialize(ViewBag.HourlyValues)),
+                        backgroundColor: '#10B981'
+                    }]
+                },
+                options: { responsive: true, plugins: { legend: { display: false } } }
+            });
+        });
+    </script>
+}

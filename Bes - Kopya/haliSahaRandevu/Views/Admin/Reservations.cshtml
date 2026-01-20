@@ -1,0 +1,84 @@
+@model IEnumerable<haliSahaRandevu.Models.Randevu>
+@using haliSahaRandevu.Models
+
+@{
+    ViewData["Title"] = "Tüm Randevular";
+    var haliSahalar = ViewBag.HaliSahalar as List<HaliSaha>;
+    var selectedId = ViewBag.SelectedHaliSahaId as int?;
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="fw-bold mb-0">Tüm Randevular</h1>
+    <div>
+        <form asp-action="Reservations" method="get" class="d-flex gap-2">
+            <select name="haliSahaId" class="form-select" style="min-width: 250px;" onchange="this.form.submit()">
+                <option value="">Tüm Sahalar</option>
+                @if(haliSahalar != null)
+                {
+                    foreach(var saha in haliSahalar)
+                    {
+                        <!option value="@saha.Id" @(selectedId == saha.Id ? "selected" : "")>@saha.Ad (@saha.Il)</!option>
+                    }
+                }
+            </select>
+            <!-- No submit button needed if onchange is used, but good for accessibility -->
+             <noscript><button type="submit" class="btn btn-primary">Filtrele</button></noscript>
+        </form>
+    </div>
+</div>
+
+<div class="card shadow border-0">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mb-0 align-middle">
+                <thead class="bg-light">
+                    <tr>
+                        <th class="ps-3">ID</th>
+                        <th>Tarih / Saat</th>
+                        <th>Saha</th>
+                        <th>Kullanıcı</th>
+                        <th>Tutar / Durum</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="ps-3"><span class="badge bg-light text-secondary border">#@item.Id</span></td>
+                            <td>
+                                <div class="fw-bold">@item.Tarih.ToString("dd.MM.yyyy")</div>
+                                <div class="small text-muted">@item.SaatAraligi</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@item.HaliSaha?.Ad</div>
+                                <div class="small text-muted">@item.HaliSaha?.Il</div>
+                            </td>
+                            <td>
+                                <div>@item.Kullanici?.FullName</div>
+                                <div class="small text-muted">@item.Kullanici?.Email</div>
+                            </td>
+                            <td>
+                                <div class="fw-bold">@item.ToplamTutar TL</div>
+                                @switch(item.Durum)
+                                {
+                                    case RandevuDurumu.Onaylandi: <span class="badge bg-success">Onaylandı</span>; break;
+                                    case RandevuDurumu.OdemeBekleniyor: <span class="badge bg-warning text-dark">Ödeme Bekleniyor</span>; break;
+                                    case RandevuDurumu.OdemeYapildi: <span class="badge bg-info text-dark">Onay Bekliyor</span>; break;
+                                    case RandevuDurumu.Reddedildi: <span class="badge bg-danger">Reddedildi</span>; break;
+                                    case RandevuDurumu.IptalEdildi: <span class="badge bg-secondary">İptal</span>; break;
+                                    case RandevuDurumu.SuresiDoldu: <span class="badge bg-secondary">Süre Doldu</span>; break;
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center p-5 text-muted">Kayıt bulunamadı.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

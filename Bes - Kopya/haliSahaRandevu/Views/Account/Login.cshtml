@@ -1,0 +1,60 @@
+@model haliSahaRandevu.ViewModels.LoginViewModel
+
+@{
+    ViewData["Title"] = "Giriş Yap";
+}
+
+<div class="row justify-content-center align-items-center min-vh-75 py-5">
+    <div class="col-md-5 col-lg-4">
+        <div class="text-center mb-4">
+            <i class="bi bi-person-circle fs-1 text-primary"></i>
+            <h2 class="fw-bold mt-2">Tekrar Hoşgeldin!</h2>
+            <p class="text-muted">Hesabına giriş yap ve maçlarını yönet.</p>
+        </div>
+
+        <div class="card border-0 shadow-lg p-3 mx-2">
+            <div class="card-body">
+                <form asp-action="Login" method="post">
+                    @if (TempData["SuccessMessage"] != null)
+                    {
+                        <div class="alert alert-success border-0 small rounded-3 mb-3">
+                            @TempData["SuccessMessage"]
+                        </div>
+                    }
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger border-0 small rounded-3 mb-3"></div>
+                    
+                    <div class="form-floating mb-3">
+                        <input asp-for="Email" class="form-control" placeholder="name@example.com" />
+                        <label asp-for="Email">Email Adresi</label>
+                        <span asp-validation-for="Email" class="text-danger small"></span>
+                    </div>
+
+                    <div class="form-floating mb-3">
+                        <input asp-for="Password" class="form-control" placeholder="Şifre" />
+                        <label asp-for="Password">Şifre</label>
+                        <span asp-validation-for="Password" class="text-danger small"></span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div class="form-check">
+                            <input class="form-check-input" asp-for="RememberMe" />
+                            <label class="form-check-label small" asp-for="RememberMe">
+                                @Html.DisplayNameFor(m => m.RememberMe)
+                            </label>
+                        </div>
+                        <a asp-action="ForgotPassword" class="small text-decoration-none fw-bold">Şifremi Unuttum?</a>
+                    </div>
+
+                    <div class="d-grid mb-3">
+                        <button type="submit" class="btn btn-primary btn-lg py-3">Giriş Yap</button>
+                    </div>
+
+                    <div class="text-center">
+                        <span class="text-muted small">Hesabın yok mu?</span>
+                        <a asp-action="Register" class="text-decoration-none fw-bold small ms-1">Hemen Kayıt Ol</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

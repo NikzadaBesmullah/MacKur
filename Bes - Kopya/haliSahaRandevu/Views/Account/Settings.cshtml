@@ -1,0 +1,138 @@
+@model haliSahaRandevu.ViewModels.SettingsViewModel
+
+@{
+    ViewData["Title"] = "Hesap Ayarları";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h2 class="fw-bold mb-4 text-center">Hesap Ayarları</h2>
+
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="bi bi-check-circle-fill"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <div class="card shadow-sm border-0 rounded-3">
+                <div class="card-body p-4 p-md-5">
+                    <form asp-action="Settings" method="post">
+                        <!-- ... (same as before) ... -->
+                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                                <i class="bi bi-exclamation-triangle-fill"></i> @TempData["ErrorMessage"]
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                        }
+
+                        <!-- Profile Info Section -->
+                        <h5 class="text-primary fw-bold mb-3"><i class="bi bi-person-lines-fill"></i> Kişisel Bilgiler</h5>
+                        <div class="form-floating mb-3">
+                            <input asp-for="FullName" class="form-control" placeholder="Ad Soyad" />
+                            <label asp-for="FullName">Ad Soyad</label>
+                            <span asp-validation-for="FullName" class="text-danger"></span>
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="PhoneNumber" class="form-control" placeholder="Telefon Numarası" />
+                            <label asp-for="PhoneNumber">Telefon Numarası</label>
+                            <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                        </div>
+
+                         <div class="form-floating mb-4">
+                            <input asp-for="Email" class="form-control bg-light" placeholder="E-Posta" readonly />
+                            <label asp-for="Email">E-Posta (Değiştirilemez)</label>
+                        </div>
+
+                        <hr class="my-4" />
+
+                        <!-- Password Change Section -->
+                        <h5 class="text-primary fw-bold mb-3"><i class="bi bi-shield-lock-fill"></i> Şifre Değiştir</h5>
+                        <div class="alert alert-light border small text-muted mb-3">
+                            <i class="bi bi-info-circle"></i> Şifrenizi değiştirmek istemiyorsanız bu alanları boş bırakın.
+                        </div>
+
+                        <div class="form-floating mb-3">
+                            <input asp-for="CurrentPassword" class="form-control" placeholder="Mevcut Şifre" />
+                            <label asp-for="CurrentPassword">Mevcut Şifre</label>
+                            <span asp-validation-for="CurrentPassword" class="text-danger"></span>
+                        </div>
+
+                        <div class="row g-2">
+                             <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="NewPassword" class="form-control" placeholder="Yeni Şifre" />
+                                    <label asp-for="NewPassword">Yeni Şifre</label>
+                                    <span asp-validation-for="NewPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                             <div class="col-md-6">
+                                <div class="form-floating mb-3">
+                                    <input asp-for="ConfirmNewPassword" class="form-control" placeholder="Tekrar" />
+                                    <label asp-for="ConfirmNewPassword">Yeni Şifre (Tekrar)</label>
+                                    <span asp-validation-for="ConfirmNewPassword" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                                <i class="bi bi-save"></i> Değişiklikleri Kaydet
+                            </button>
+                        </div>
+                    </form>
+
+                    <hr class="my-5" />
+
+                    <!-- Danger Zone Section -->
+                    <div class="danger-zone p-4 border border-danger rounded-3 bg-light bg-opacity-10">
+                        <h5 class="text-danger fw-bold mb-3"><i class="bi bi-exclamation-octagon-fill"></i> Tehlikeli Bölge</h5>
+                        <p class="text-muted small mb-4">
+                            Hesabınızı sildiğinizde tüm verileriniz kalıcı olarak kaldırılacaktır. Bu işlem geri alınamaz.
+                        </p>
+                        <div class="d-grid">
+                            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+                                <i class="bi bi-trash"></i> Hesabımı Kalıcı Olarak Sil
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-danger" id="deleteAccountModalLabel">Hesabı Silmeyi Onayla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form asp-action="DeleteAccount" method="post">
+                <div class="modal-body py-4">
+                    <p class="mb-4">Hesabınızı silmek istediğinizden emin misiniz? Devam etmek için lütfen şifrenizi girin.</p>
+                    <div class="form-floating">
+                        <input type="password" name="deletePassword" class="form-control" id="deletePassword" placeholder="Şifreniz" required />
+                        <label for="deletePassword">Şifreniz</label>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0">
+                    <button type="button" class="btn btn-light fw-bold px-4" data-bs-toggle="modal">İptal</button>
+                    <button type="submit" class="btn btn-danger fw-bold px-4">Evet, Hesabımı Sil</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

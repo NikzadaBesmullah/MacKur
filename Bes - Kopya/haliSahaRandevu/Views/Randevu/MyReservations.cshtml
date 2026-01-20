@@ -1,0 +1,77 @@
+@model IEnumerable<haliSahaRandevu.Models.Randevu>
+@using haliSahaRandevu.Models
+
+@{
+    ViewData["Title"] = "Randevularım";
+}
+
+<div class="container mt-4">
+    <h2 class="mb-4">Randevularım</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="alert alert-info">
+            Henüz oluşturulmuş bir randevunuz bulunmamaktadır.
+            <div class="mt-2">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-sm">Hemen Randevu Al</a>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="row">
+        @foreach (var item in Model)
+        {
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-header bg-white border-bottom-0 pt-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="badge bg-secondary">@item.Tarih.ToString("dd.MM.yyyy")</span>
+                             @switch(item.Durum)
+                            {
+                                case RandevuDurumu.Onaylandi: <span class="badge bg-success">Onaylandı</span>; break;
+                                case RandevuDurumu.OdemeBekleniyor: <span class="badge bg-warning text-dark">Ödeme Bekleniyor</span>; break;
+                                case RandevuDurumu.OdemeYapildi: <span class="badge bg-info text-dark">Onay Bekliyor</span>; break;
+                                case RandevuDurumu.Reddedildi: <span class="badge bg-danger">Reddedildi</span>; break;
+                                case RandevuDurumu.IptalEdildi: <span class="badge bg-secondary">İptal</span>; break;
+                                case RandevuDurumu.SuresiDoldu: <span class="badge bg-secondary">Süre Doldu</span>; break;
+                            }
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title text-primary">@item.HaliSaha?.Ad</h5>
+                        <p class="card-text mb-1"><i class="bi bi-clock"></i> @item.SaatAraligi</p>
+                        <p class="card-text text-muted small"><i class="bi bi-geo-alt"></i> @item.HaliSaha?.Il</p>
+                        
+                        <div class="d-flex justify-content-between align-items-center mt-3 p-2 bg-light rounded">
+                            <span class="text-muted small">Tutar:</span>
+                            <span class="fw-bold">@item.ToplamTutar TL</span>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 pb-3">
+                         @if (item.Durum == RandevuDurumu.OdemeBekleniyor)
+                         {
+                             <div class="d-grid gap-2">
+                                <a asp-action="Payment" asp-route-id="@item.Id" class="btn btn-warning">
+                                    <i class="bi bi-credit-card"></i> Ödeme Yap (Dekont)
+                                </a>
+                                <form asp-action="CancelReservation" asp-route-id="@item.Id" method="post" onsubmit="return confirm('Randevuyu iptal etmek istediğinize emin misiniz?');">
+                                    <button type="submit" class="btn btn-outline-danger w-100">
+                                        <i class="bi bi-x-circle"></i> İptal Et
+                                    </button>
+                                </form>
+                             </div>
+                         }
+                         else
+                         {
+                             <div class="d-grid">
+                                 <button class="btn btn-outline-secondary" disabled>Detay</button>
+                             </div>
+                         }
+                    </div>
+                </div>
+            </div>
+        }
+        </div>
+    }
+</div>

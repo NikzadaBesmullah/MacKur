@@ -1,0 +1,62 @@
+@model IEnumerable<haliSahaRandevu.Models.HaliSaha>
+
+@{
+    ViewData["Title"] = "Sahalarım";
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<h1>Sahalarım</h1>
+
+@if (!(ViewBag.HasField ?? false))
+{
+    <p>
+        <a asp-action="Create" class="btn btn-primary">Yeni Saha Ekle</a>
+    </p>
+}
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>@Html.DisplayNameFor(model => model.Ad)</th>
+            <th>@Html.DisplayNameFor(model => model.Il)</th>
+            <th>@Html.DisplayNameFor(model => model.SaatlikUcret)</th>
+            <th>Durum</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>@Html.DisplayFor(modelItem => item.Ad)</td>
+            <td>@Html.DisplayFor(modelItem => item.Il)</td>
+            <td>@Html.DisplayFor(modelItem => item.SaatlikUcret) TL</td>
+            <td>
+                @if(item.OnaylandiMi)
+                {
+                    <span class="badge bg-success">Onaylandı</span>
+                }
+                else
+                {
+                    <span class="badge bg-warning text-dark">Onay Bekliyor</span>
+                }
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-info text-white">
+                    <i class="bi bi-pencil-square"></i> Düzenle
+                </a>
+                <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bu sahayı silmek istediğinize emin misiniz?');">
+                    <button type="submit" class="btn btn-sm btn-danger">
+                        <i class="bi bi-trash"></i> Sil
+                    </button>
+                </form>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

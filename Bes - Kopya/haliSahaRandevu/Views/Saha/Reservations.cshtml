@@ -1,0 +1,123 @@
+@model IEnumerable<haliSahaRandevu.Models.Randevu>
+@using haliSahaRandevu.Models
+
+@{
+    ViewData["Title"] = "Randevu Yönetimi";
+    var notifications = ViewBag.PaymentNotifications as Dictionary<int, OdemeBildirimi>;
+}
+
+<h1>Randevu Yönetimi</h1>
+<p>Sahalarınız için oluşturulan randevuları ve ödeme bildirimlerini buradan yönetebilirsiniz.</p>
+
+<ul class="nav nav-tabs mb-3" id="myTab" role="tablist">
+    <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-selected="true">Onay Bekleyenler</button>
+    </li>
+    <li class="nav-item" role="presentation">
+        <button class="nav-link" id="all-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab" aria-selected="false">Tüm Randevular</button>
+    </li>
+</ul>
+
+<div class="tab-content" id="myTabContent">
+    <!-- Pending Approvals Tab -->
+    <div class="tab-pane fade show active" id="pending" role="tabpanel">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Tarih/Saat</th>
+                        <th>Saha</th>
+                        <th>Kullanıcı</th>
+                        <th>Tutar</th>
+                        <th>Ödeme Kodu</th>
+                        <th>Dekont</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Where(r => r.Durum == RandevuDurumu.OdemeYapildi))
+                    {
+                        var bildirimi = notifications != null && notifications.ContainsKey(item.Id) ? notifications[item.Id] : null;
+                        <tr>
+                            <td>
+                                @item.Tarih.ToString("dd.MM.yyyy") <br />
+                                <small>@item.SaatAraligi</small>
+                            </td>
+                            <td>@item.HaliSaha?.Ad</td>
+                            <td>@item.Kullanici?.FullName <br/><small class="text-muted">@item.Kullanici?.Email</small><br/><small class="text-muted">@item.Kullanici?.PhoneNumber</small></td>
+                            <td>@item.OnOdemeTutari TL <br/><small class="text-muted">Toplam: @item.ToplamTutar</small></td>
+                            <td><span class="badge bg-secondary">@item.OdemeKodu</span></td>
+                            <td>
+                                @if (bildirimi != null)
+                                {
+                                    <a href="@bildirimi.DekontYolu" target="_blank" class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-file-earmark-image"></i> Dekontu Gör
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Yüklenmedi</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group">
+                                    <form asp-action="ApproveReservation" method="post">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-success btn-sm me-1">Onayla</button>
+                                    </form>
+                                    <form asp-action="RejectReservation" method="post">
+                                        <input type="hidden" name="id" value="@item.Id" />
+                                        <button type="submit" class="btn btn-danger btn-sm">Reddet</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.Any(r => r.Durum == RandevuDurumu.OdemeYapildi))
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center text-muted">Onay bekleyen randevu yok.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- All Reservations Tab -->
+    <div class="tab-pane fade" id="all" role="tabpanel">
+        <table class="table table-striped">
+             <thead>
+                <tr>
+                    <th>Tarih/Saat</th>
+                    <th>Saha</th>
+                    <th>Kullanıcı</th>
+                    <th>Telefon</th>
+                    <th>Durum</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Tarih.ToString("dd.MM.yyyy") @item.SaatAraligi</td>
+                        <td>@item.HaliSaha?.Ad</td>
+                        <td>@item.Kullanici?.FullName</td>
+                        <td>@item.Kullanici?.PhoneNumber</td>
+                        <td>
+                            @switch(item.Durum)
+                            {
+                                case RandevuDurumu.Onaylandi: <span class="badge bg-success">Onaylandı</span>; break;
+                                case RandevuDurumu.OdemeBekleniyor: <span class="badge bg-warning text-dark">Ödeme Bekleniyor</span>; break;
+                                case RandevuDurumu.OdemeYapildi: <span class="badge bg-info text-dark">Onay Bekliyor</span>; break;
+                                case RandevuDurumu.Reddedildi: <span class="badge bg-danger">Reddedildi</span>; break;
+                                case RandevuDurumu.IptalEdildi: <span class="badge bg-secondary">İptal</span>; break;
+                                case RandevuDurumu.SuresiDoldu: <span class="badge bg-secondary">Süre Doldu</span>; break;
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

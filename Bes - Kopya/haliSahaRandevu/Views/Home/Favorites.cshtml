@@ -1,0 +1,71 @@
+@model IEnumerable<haliSahaRandevu.Models.HaliSaha>
+
+@{
+    ViewData["Title"] = "Favorilerim";
+}
+
+<div class="row mb-5 align-items-center">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold text-primary">Favorilerim</h1>
+        <p class="lead text-muted">Beğendiğiniz sahalar burada listelenir.</p>
+    </div>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="text-center py-5">
+        <i class="bi bi-heart-break display-1 text-muted opacity-25"></i>
+        <h3 class="mt-4 text-muted">Henüz favori sahanız yok.</h3>
+        <p>Beğendiğiniz sahaları kalp ikonuna tıklayarak buraya ekleyebilirsiniz.</p>
+        <a asp-action="Index" class="btn btn-primary mt-3">Sahaları Keşfet</a>
+    </div>
+}
+else
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var item in Model)
+        {
+            <div class="col">
+                <div class="card h-100 field-card position-relative shadow-sm border-0">
+                     <div class="position-absolute top-0 end-0 p-2" style="z-index: 10;">
+                        <button class="btn btn-sm btn-light rounded-circle shadow-sm" onclick="removeFavorite(@item.Id, this)">
+                            <i class="bi bi-heart-fill text-danger"></i>
+                        </button>
+                    </div>
+                    <img src="@(string.IsNullOrEmpty(item.FotoUrl) ? "https://via.placeholder.com/300x200?text=Hali+Saha" : item.FotoUrl)" class="card-img-top" alt="@item.Ad" style="height: 200px; object-fit: cover;">
+                    <div class="card-body">
+                         <div class="d-flex justify-content-between align-items-start mb-2">
+                            <h5 class="card-title fw-bold mb-0">@item.Ad</h5>
+                            @if(item.OrtalamaPuan > 0)
+                            {
+                                <span class="badge bg-warning text-dark"><i class="bi bi-star-fill"></i> @item.OrtalamaPuan</span>
+                            }
+                        </div>
+                        <p class="field-card-location small text-muted"><i class="bi bi-geo-alt-fill text-primary"></i> @item.Il, @item.Adres</p>
+                        <p class="card-text text-truncate small">@item.Aciklama</p>
+                    </div>
+                    <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pt-0 pb-3">
+                         <span class="fw-bold text-primary">@item.SaatlikUcret ₺ <small class="text-muted fw-normal">/ Saat</small></span>
+                        <a asp-action="Details" asp-route-id="@item.Id" class="btn btn-sm btn-outline-primary rounded-pill px-3">Detaylar</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@section Scripts {
+    <script>
+        function removeFavorite(id, btn) {
+            if(!confirm('Bu sahayi favorilerden kaldirmak istediginize emin misiniz?')) return;
+            
+            $.post('/Home/ToggleFavorite', { id: id, __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val() }, function(res) {
+                if (res.success) {
+                    $(btn).closest('.col').fadeOut(300, function() { $(this).remove(); });
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+    </script>
+}

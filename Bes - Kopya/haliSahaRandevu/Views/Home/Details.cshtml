@@ -1,0 +1,207 @@
+@model haliSahaRandevu.Models.HaliSaha
+
+@{
+    ViewData["Title"] = Model.Ad;
+}
+
+<div class="row">
+    <div class="col-md-8">
+        @if (Model.Fotolar != null && Model.Fotolar.Any())
+        {
+            <div id="fieldCarousel" class="carousel slide mb-3 rounded overflow-hidden shadow-sm" data-bs-ride="carousel">
+                <div class="carousel-indicators">
+                    @for (int i = 0; i < Model.Fotolar.Count; i++)
+                    {
+                        <button type="button" data-bs-target="#fieldCarousel" data-bs-slide-to="@i" class="@(i == 0 ? "active" : "")" aria-current="true" aria-label="Slide @(i+1)"></button>
+                    }
+                </div>
+                <div class="carousel-inner">
+                    @foreach (var (foto, index) in Model.Fotolar.Select((v, i) => (v, i)))
+                    {
+                        <div class="carousel-item @(index == 0 ? "active" : "")">
+                            <img src="@foto.Url" class="d-block w-100" style="height: 400px; object-fit: cover;" alt="@Model.Ad">
+                        </div>
+                    }
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#fieldCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#fieldCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        }
+        else if (!string.IsNullOrEmpty(Model.FotoUrl))
+        {
+            <img src="@Model.FotoUrl" class="img-fluid rounded mb-3 w-100" style="max-height: 400px; object-fit: cover;" alt="@Model.Ad" />
+        }
+        else
+        {
+             <img src="https://via.placeholder.com/800x400?text=Hali+Saha" class="img-fluid rounded mb-3 w-100" alt="Placeholder" />
+        }
+        
+        <h2>
+            @Model.Ad 
+            @if(Model.OrtalamaPuan > 0)
+            {
+                <span class="text-warning fs-5 ms-2">
+                    <i class="bi bi-star-fill"></i> @Model.OrtalamaPuan
+                </span>
+            }
+        </h2>
+        <p class="text-muted"><i class="bi bi-geo-alt-fill"></i> @Model.Il, @Model.Adres</p>
+        <hr />
+        <h4>Hakkında</h4>
+        <p>@Model.Aciklama</p>
+
+        <hr />
+        <!-- Reviews Section -->
+        <h4 class="mb-3">Yorumlar ve Değerlendirmeler (@(Model.Yorumlar?.Count ?? 0))</h4>
+        
+        @if (User.Identity.IsAuthenticated)
+        {
+            <div class="card mb-4 shadow-sm border-0 bg-light">
+                <div class="card-body">
+                    <h6 class="card-title">Yorum Yap</h6>
+                    <form asp-action="AddComment" method="post">
+                        <input type="hidden" name="id" value="@Model.Id" />
+                        <div class="mb-3">
+                            <label class="form-label small text-muted">Puanınız</label>
+                            <div class="rating-css">
+                                <div class="star-icon">
+                                    <input type="radio" value="1" name="puan" checked id="rating1">
+                                    <label for="rating1" class="bi bi-star-fill"></label>
+                                    <input type="radio" value="2" name="puan" id="rating2">
+                                    <label for="rating2" class="bi bi-star-fill"></label>
+                                    <input type="radio" value="3" name="puan" id="rating3">
+                                    <label for="rating3" class="bi bi-star-fill"></label>
+                                    <input type="radio" value="4" name="puan" id="rating4">
+                                    <label for="rating4" class="bi bi-star-fill"></label>
+                                    <input type="radio" value="5" name="puan" id="rating5">
+                                    <label for="rating5" class="bi bi-star-fill"></label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <textarea name="yorum" class="form-control" rows="3" placeholder="Deneyiminizi paylaşın..." required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm px-4 rounded-pill">Gönder</button>
+                    </form>
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-light border">
+                Yorum yapmak için <a asp-controller="Account" asp-action="Login">giriş yapmalısınız</a>.
+            </div>
+        }
+
+        @if(Model.Yorumlar != null && Model.Yorumlar.Any())
+        {
+            <div class="list-group list-group-flush">
+                @foreach(var yorum in Model.Yorumlar.OrderByDescending(y => y.Tarih))
+                {
+                    <div class="list-group-item px-0 py-3">
+                        <div class="d-flex w-100 justify-content-between align-items-center mb-1">
+                            <h6 class="mb-0 fw-bold">@yorum.Uye?.FullName <small class="text-muted fw-normal">@yorum.Uye?.UserName</small></h6>
+                            <small class="text-muted">@yorum.Tarih.ToString("dd.MM.yyyy")</small>
+                        </div>
+                        <div class="mb-2 text-warning small">
+                            @for(int i=0; i<yorum.Puan; i++) { <i class="bi bi-star-fill"></i> }
+                            @for(int i=yorum.Puan; i<5; i++) { <i class="bi bi-star"></i> }
+                        </div>
+                        <p class="mb-1 text-secondary">@yorum.Yorum</p>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="text-muted fst-italic">Henüz yorum yapılmamış. İlk yorumu siz yapın!</p>
+        }
+
+        @if (Model.Enlem.HasValue && Model.Boylam.HasValue && Model.Enlem >= -90 && Model.Enlem <= 90 && Model.Boylam >= -180 && Model.Boylam <= 180)
+        {
+            <hr />
+            <h4>Konum</h4>
+            <div id="map" style="height: 350px; border-radius: 12px;" class="border shadow-sm mb-4"></div>
+        }
+        else if(Model.Enlem.HasValue || Model.Boylam.HasValue) 
+        {
+            <div class="alert alert-warning mt-3">
+                <i class="bi bi-exclamation-triangle-fill"></i> Sahanın konum bilgisi hatalı olduğu için harita görüntülenemiyor. Lütfen saha sahibi ile iletişime geçin veya yönetici panelinden konumu güncelleyin.
+            </div>
+        }
+    </div>
+    <div class="col-md-4">
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <h3 class="card-title text-primary text-center">@Model.SaatlikUcret TL <small class="text-muted" style="font-size: 0.6em;">/ Saat</small></h3>
+                <hr />
+                
+                @if (User.Identity.IsAuthenticated)
+                {
+                    <div class="d-grid gap-2">
+                        <p class="text-center text-muted">Randevu almak için aşağıdaki butona tıklayın.</p>
+                         <a asp-controller="Randevu" asp-action="Create" asp-route-haliSahaId="@Model.Id" class="btn btn-success btn-lg">Randevu Oluştur</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning text-center">
+                        Randevu almak için giriş yapmalısınız.
+                        <br />
+                        <a asp-controller="Account" asp-action="Login" class="alert-link">Giriş Yap</a>
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="mt-4 card p-3 bg-light border-0">
+            <h5><i class="bi bi-telephone-fill"></i> İletişim</h5>
+            <div class="d-flex align-items-center mb-2">
+                <i class="bi bi-person-circle fs-4 me-2 text-secondary"></i>
+                <span class="fw-bold">@Model.Sahibi?.FullName</span>
+            </div>
+            
+            @if (!string.IsNullOrEmpty(Model.Sahibi?.PhoneNumber))
+            {
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-phone me-2 text-muted"></i>
+                    <a href="tel:@Model.Sahibi.PhoneNumber" class="text-decoration-none text-dark">@Model.Sahibi.PhoneNumber</a>
+                </div>
+            }
+            
+            <div class="d-flex align-items-center">
+                <i class="bi bi-envelope me-2 text-muted"></i>
+                <a href="mailto:@Model.Sahibi?.Email" class="text-decoration-none text-dark">@Model.Sahibi?.Email</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @if (Model.Enlem.HasValue && Model.Boylam.HasValue && Model.Enlem >= -90 && Model.Enlem <= 90 && Model.Boylam >= -180 && Model.Boylam <= 180)
+    {
+        <script>
+            $(document).ready(function() {
+                var lat = @(Model.Enlem.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                var lng = @(Model.Boylam.Value.ToString(System.Globalization.CultureInfo.InvariantCulture));
+                
+                var map = L.map('map').setView([lat, lng], 15);
+
+                L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                    maxZoom: 19,
+                    attribution: '© OpenStreetMap contributors'
+                }).addTo(map);
+
+                L.marker([lat, lng]).addTo(map)
+                    .bindPopup('<b>@Model.Ad</b><br>@Model.Adres')
+                    .openPopup();
+            });
+        </script>
+    }
+}

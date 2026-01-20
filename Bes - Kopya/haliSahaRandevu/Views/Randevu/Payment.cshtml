@@ -1,0 +1,64 @@
+@model haliSahaRandevu.Models.Randevu
+
+@{
+    ViewData["Title"] = "Ödeme Yap";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card border-warning mb-3">
+            <div class="card-header bg-warning text-dark">
+                <i class="bi bi-credit-card"></i> Ödeme Bekleniyor
+            </div>
+            <div class="card-body">
+                <h5 class="card-title">Randevunuz oluşturuldu!</h5>
+                <p class="card-text">Lütfen <strong>15 dakika</strong> içinde ön ödemeyi gerçekleştirip dekont yükleyiniz. Aksi takdirde randevunuz iptal edilecektir.</p>
+                
+                <hr />
+                <dl class="row">
+                    <dt class="col-sm-4">Tarih:</dt>
+                    <dd class="col-sm-8">@Model.Tarih.ToString("dd.MM.yyyy")</dd>
+                    
+                    <dt class="col-sm-4">Saat:</dt>
+                    <dd class="col-sm-8">@Model.SaatAraligi</dd>
+
+                    <dt class="col-sm-4">Toplam Tutar:</dt>
+                    <dd class="col-sm-8">@Model.ToplamTutar TL</dd>
+
+                    <dt class="col-sm-4 text-danger">Ön Ödeme:</dt>
+                    <dd class="col-sm-8 text-danger fw-bold">@Model.OnOdemeTutari TL</dd>
+                    
+                    <dt class="col-sm-4">Randevu Kodu:</dt>
+                    <dd class="col-sm-8 "><span class="badge bg-secondary fs-6">@Model.OdemeKodu</span> (Açıklamaya yazınız)</dd>
+                </dl>
+
+                <div class="alert alert-light border">
+                    <h6>Banka Bilgileri</h6>
+                    @if (!string.IsNullOrEmpty(Model.HaliSaha.Iban))
+                    {
+                        <p class="mb-0"><strong>IBAN:</strong> @Model.HaliSaha.Iban</p>
+                        <p class="mb-0"><strong>Alıcı:</strong> @Model.HaliSaha.Ad</p>
+                    }
+                    else
+                    {
+                         <p class="text-danger mb-0"><small>IBAN bilgisi bulunamadı. Lütfen işletme ile iletişime geçiniz.</small></p>
+                    }
+                </div>
+                
+                <form asp-action="Payment" enctype="multipart/form-data" method="post">
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Dekont Yükle</label>
+                        <input type="file" name="dekontFile" class="form-control" accept="image/*,.pdf" required />
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Ödemeyi Bildir</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
