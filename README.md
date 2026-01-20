@@ -37,13 +37,9 @@ Modern, hızlı ve kullanıcı dostu bir halı saha rezervasyon ve yönetim plat
 ## 📸 Ekran Görüntüleri
 # Kullanıcı
 <img width="1919" height="880" alt="Ekran görüntüsü 2026-01-20 203424" src="https://github.com/user-attachments/assets/b8c5dcd1-6061-4b42-85fb-176d43189fcd" />
-#
 <img width="1871" height="954" alt="Ekran görüntüsü 2026-01-20 203448" src="https://github.com/user-attachments/assets/40e73511-52fb-4889-8975-007add1596ea" />
-#
 <img width="1898" height="1006" alt="Ekran görüntüsü 2026-01-20 203506" src="https://github.com/user-attachments/assets/a1228259-03ef-46f9-8634-c7ebab109b4f" />
-#
 <img width="1906" height="897" alt="Ekran görüntüsü 2026-01-20 203512" src="https://github.com/user-attachments/assets/262e035b-601c-4a6f-8e26-dc9a6f2fe6ae" />
-#
 <img width="1889" height="913" alt="Ekran görüntüsü 2026-01-20 203531" src="https://github.com/user-attachments/assets/14c8687c-0cc7-4f92-a46a-b13341950eb0" />
 
 # Saha sahibi
